@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Model Implied P/E Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            gap: 1rem;
+            align-items: center;
+        }
+        .input-group label {
+            font-weight: 500;
+            color: #374151;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            text-align: right;
+            font-size: 1rem;
+        }
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #D1D5DB;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 9999px;
+        }
+        .slider:hover {
+            opacity: 1;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3B82F6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3B82F6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .highlight-cell {
+            background-color: #BFDBFE;
+            font-weight: 700;
+            color: #1E40AF;
+        }
+        .error-message {
+            color: #EF4444;
+            background-color: #FEE2E2;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid #FCA5A5;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #4B5563;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-btn.active {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #F3F4F6;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            color: #4B5563;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Implied P/E Calculator</h1>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 mb-8 justify-center">
+            <button class="tab-btn active" data-model="two-stage">Two-Stage Model</button>
+            <button class="tab-btn" data-model="single-stage">Single-Stage Compound Model</button>
+        </div>
+
+        <!-- Two-Stage Model Content -->
+        <div id="two-stage-model" class="model-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Input Panel -->
+                <div class="lg:col-span-1">
+                    <div class="card sticky top-8">
+                        <h2 class="text-xl font-semibold mb-6 border-b pb-3">Input Parameters</h2>
+                        <form id="two-stage-form" class="space-y-6">
+                            <div>
+                                <div class="input-group"><label for="ts-roic">ROIC</label><input type="number" id="ts-roic" value="15" step="0.1" class="input-field"></div>
+                                <input type="range" id="ts-roic-slider" min="0" max="50" value="15" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ts-g1">Growth Rate - Stage 1 (g1)</label><input type="number" id="ts-g1" value="10" step="0.1" class="input-field"></div>
+                                <input type="range" id="ts-g1-slider" min="0" max="30" value="10" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ts-t">Duration of Stage 1 (T)</label><input type="number" id="ts-t" value="5" step="1" class="input-field"></div>
+                                <input type="range" id="ts-t-slider" min="1" max="20" value="5" step="1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ts-g2">Perpetual Growth Rate (g2)</label><input type="number" id="ts-g2" value="3" step="0.1" class="input-field"></div>
+                                <input type="range" id="ts-g2-slider" min="0" max="10" value="3" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ts-wacc">WACC</label><input type="number" id="ts-wacc" value="8" step="0.1" class="input-field"></div>
+                                <input type="range" id="ts-wacc-slider" min="1" max="20" value="8" step="0.1" class="slider mt-2">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- Output Panel -->
+                <div class="lg:col-span-2">
+                    <div class="card">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3">Calculation Results</h2>
+                        <div id="ts-error-container" class="hidden"></div>
+                        <div id="ts-results-container">
+                            <div class="text-center py-8"><p class="text-lg text-gray-600">Implied P/E</p><p id="ts-pe-result" class="text-5xl font-bold text-blue-600 my-2">--</p></div>
+                            <div class="mt-8">
+                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs WACC & g2)</h3>
+                                <div id="ts-sensitivity-table-container" class="overflow-x-auto"></div>
+                            </div>
+                             <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
+                                <p class="text-xs text-gray-500 italic">
+                                    <strong>Method:</strong> Implied P/E is the sum of the present value of Free Cash Flows to the Firm (FCFF) during the high-growth period (Stage 1) and the present value of the terminal value.
+                                </p>
+                                <p class="text-xs text-gray-500 italic">
+                                    <strong>Formula:</strong>
+                                    <span class="block formula mt-1">P/E = PV(Stage 1 FCFF) + PV(Terminal Value)<br>where Terminal Value = FCFF_T+1 / (WACC - g2)</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Single-Stage Model Content -->
+        <div id="single-stage-model" class="model-content hidden">
+             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Input Panel -->
+                <div class="lg:col-span-1">
+                    <div class="card sticky top-8">
+                        <h2 class="text-xl font-semibold mb-6 border-b pb-3">Input Parameters</h2>
+                        <form id="single-stage-form" class="space-y-6">
+                            <div>
+                                <div class="input-group"><label for="ss-roic">ROIC</label><input type="number" id="ss-roic" value="20" step="0.1" class="input-field"></div>
+                                <input type="range" id="ss-roic-slider" min="0" max="50" value="20" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ss-g">Growth Rate (g)</label><input type="number" id="ss-g" value="15" step="0.1" class="input-field"></div>
+                                <input type="range" id="ss-g-slider" min="0" max="40" value="15" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ss-t">Duration (T)</label><input type="number" id="ss-t" value="10" step="1" class="input-field"></div>
+                                <input type="range" id="ss-t-slider" min="1" max="30" value="10" step="1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ss-wacc">WACC</label><input type="number" id="ss-wacc" value="10" step="0.1" class="input-field"></div>
+                                <input type="range" id="ss-wacc-slider" min="1" max="20" value="10" step="0.1" class="slider mt-2">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- Output Panel -->
+                <div class="lg:col-span-2">
+                    <div class="card">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3">Calculation Results</h2>
+                        <div id="ss-error-container" class="hidden"></div>
+                        <div id="ss-results-container">
+                            <div class="text-center py-8"><p class="text-lg text-gray-600">Implied P/E</p><p id="ss-pe-result" class="text-5xl font-bold text-blue-600 my-2">--</p></div>
+                            <div class="mt-8">
+                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs WACC & Growth Rate)</h3>
+                                <div id="ss-sensitivity-table-container" class="overflow-x-auto"></div>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
+                                <p class="text-xs text-gray-500 italic">
+                                    <strong>Method:</strong> Implied P/E is the sum of the present value of FCFF during the explicit growth period and the present value of the residual value.
+                                </p>
+                                <p class="text-xs text-gray-500 italic">
+                                    <strong>Formula:</strong>
+                                    <span class="block formula mt-1">P/E = PV(FCFF) + PV(Residual Value)<br>where Residual Value = NOPAT_T / WACC</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-12 text-sm text-gray-500">
+            <p>This is a valuation tool for reference purposes only.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Generic Helper Functions ---
+            const linkInputs = (numInput, sliderInput, callback) => {
+                numInput.addEventListener('input', (e) => {
+                    sliderInput.value = e.target.value;
+                    callback();
+                });
+                sliderInput.addEventListener('input', (e) => {
+                    numInput.value = e.target.value;
+                    callback();
+                });
+            };
+
+            const displayResult = (element, value) => {
+                if (value && isFinite(value)) {
+                    element.textContent = value.toFixed(2);
+                    element.classList.toggle('text-red-600', value < 0);
+                    element.classList.toggle('text-blue-600', value >= 0);
+                } else {
+                    element.textContent = '--';
+                }
+            };
+            
+            const showError = (container, message) => {
+                container.textContent = message;
+                container.classList.remove('hidden');
+            };
+
+            const hideError = (container) => {
+                container.classList.add('hidden');
+            };
+
+            // --- Two-Stage Model Logic ---
+            const ts = {
+                form: document.getElementById('two-stage-form'),
+                peResultEl: document.getElementById('ts-pe-result'),
+                tableContainer: document.getElementById('ts-sensitivity-table-container'),
+                errorContainer: document.getElementById('ts-error-container'),
+                resultsContainer: document.getElementById('ts-results-container'),
+                inputs: {
+                    roic: { num: document.getElementById('ts-roic'), slider: document.getElementById('ts-roic-slider') },
+                    g1: { num: document.getElementById('ts-g1'), slider: document.getElementById('ts-g1-slider') },
+                    t: { num: document.getElementById('ts-t'), slider: document.getElementById('ts-t-slider') },
+                    g2: { num: document.getElementById('ts-g2'), slider: document.getElementById('ts-g2-slider') },
+                    wacc: { num: document.getElementById('ts-wacc'), slider: document.getElementById('ts-wacc-slider') },
+                }
+            };
+
+            function calculateTwoStagePE(roic, g1, t, g2, wacc) {
+                roic /= 100; g1 /= 100; g2 /= 100; wacc /= 100;
+                if (wacc <= g2) return { error: 'WACC must be greater than Perpetual Growth Rate (g2).' };
+                if (roic <= 0) return { error: 'ROIC must be a positive number.' };
+                
+                const rr1 = g1 / roic;
+                let pvStage1 = 0;
+                for (let i = 1; i <= t; i++) {
+                    pvStage1 += (Math.pow(1 + g1, i) * (1 - rr1)) / Math.pow(1 + wacc, i);
+                }
+                const rr2 = g2 / roic;
+                const nopat_t1_ratio = Math.pow(1 + g1, t) * (1 + g2);
+                const fcff_t1_ratio = nopat_t1_ratio * (1 - rr2);
+                const terminalValueT = fcff_t1_ratio / (wacc - g2);
+                const pvTerminalValue = terminalValueT / Math.pow(1 + wacc, t);
+                return { value: pvStage1 + pvTerminalValue };
+            }
+
+            function generateTwoStageSensitivityTable(params) {
+                const { roic, g1, t, g2, wacc } = params;
+                const waccSteps = [-1, -0.5, 0, 0.5, 1];
+                const g2Steps = [-0.5, -0.25, 0, 0.25, 0.5];
+                let tableHtml = '<table class="w-full border-collapse text-center">';
+                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">WACC \\ g2</th>';
+                g2Steps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g2 + step).toFixed(2)}%</th>`; });
+                tableHtml += '</tr></thead><tbody>';
+                waccSteps.forEach(waccStep => {
+                    const currentWacc = wacc + waccStep;
+                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
+                    g2Steps.forEach(g2Step => {
+                        const currentG2 = g2 + g2Step;
+                        const result = calculateTwoStagePE(roic, g1, t, currentG2, currentWacc);
+                        let val = (result.value && isFinite(result.value) && result.value > 0) ? result.value.toFixed(2) : 'N/A';
+                        tableHtml += `<td class="p-2 border ${waccStep === 0 && g2Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
+                    });
+                    tableHtml += '</tr>';
+                });
+                tableHtml += '</tbody></table>';
+                ts.tableContainer.innerHTML = tableHtml;
+            }
+
+            function updateTwoStageUI() {
+                const params = {};
+                for (const key in ts.inputs) { params[key] = parseFloat(ts.inputs[key].num.value); }
+                const result = calculateTwoStagePE(params.roic, params.g1, params.t, params.g2, params.wacc);
+                if (result.error) {
+                    showError(ts.errorContainer, result.error);
+                    ts.resultsContainer.classList.add('hidden');
+                } else {
+                    hideError(ts.errorContainer);
+                    ts.resultsContainer.classList.remove('hidden');
+                    displayResult(ts.peResultEl, result.value);
+                    generateTwoStageSensitivityTable(params);
+                }
+            }
+
+            // --- Single-Stage Model Logic ---
+            const ss = {
+                form: document.getElementById('single-stage-form'),
+                peResultEl: document.getElementById('ss-pe-result'),
+                tableContainer: document.getElementById('ss-sensitivity-table-container'),
+                errorContainer: document.getElementById('ss-error-container'),
+                resultsContainer: document.getElementById('ss-results-container'),
+                inputs: {
+                    roic: { num: document.getElementById('ss-roic'), slider: document.getElementById('ss-roic-slider') },
+                    g: { num: document.getElementById('ss-g'), slider: document.getElementById('ss-g-slider') },
+                    t: { num: document.getElementById('ss-t'), slider: document.getElementById('ss-t-slider') },
+                    wacc: { num: document.getElementById('ss-wacc'), slider: document.getElementById('ss-wacc-slider') },
+                }
+            };
+            
+            function calculateSingleStagePE(roic, g, t, wacc) {
+                // Convert percentages to decimals
+                roic /= 100; 
+                g /= 100; 
+                wacc /= 100;
+
+                // Input Validation
+                if (roic <= 0) return { error: 'ROIC must be a positive number.' };
+                if (wacc <= 0) return { error: 'WACC must be a positive number.' };
+
+                // --- Part 1: PV of FCFF during the explicit period (T years) ---
+                const rr = g / roic;
+                let pvFcfPeriod = 0;
+                for (let i = 1; i <= t; i++) {
+                    const fcff_ratio = Math.pow(1 + g, i) * (1 - rr);
+                    pvFcfPeriod += fcff_ratio / Math.pow(1 + wacc, i);
+                }
+
+                // --- Part 2: PV of Residual Value ---
+                // Residual Value = (NOPAT at T) / WACC, discounted to year 0.
+                // Assuming no growth after year T, so NOPAT_t+1 = NOPAT_t.
+                // NOPAT_t relative to NOPAT_0=1 is (1+g)^t
+                const nopatT = Math.pow(1 + g, t);
+                
+                // Residual value at time T (value of a no-growth perpetuity of NOPAT_t)
+                const residualValueT = nopatT / wacc;
+                
+                // Discount the residual value back to year 0
+                const pvResidualValue = residualValueT / Math.pow(1 + wacc, t);
+
+                // --- Total Implied P/E ---
+                const impliedPE = pvFcfPeriod + pvResidualValue;
+                
+                return { value: impliedPE };
+            }
+
+            function generateSingleStageSensitivityTable(params) {
+                const { roic, g, t, wacc } = params;
+                const waccSteps = [-1, -0.5, 0, 0.5, 1];
+                const gSteps = [-1, -0.5, 0, 0.5, 1];
+                let tableHtml = '<table class="w-full border-collapse text-center">';
+                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">WACC \\ Growth</th>';
+                gSteps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g + step).toFixed(2)}%</th>`; });
+                tableHtml += '</tr></thead><tbody>';
+                waccSteps.forEach(waccStep => {
+                    const currentWacc = wacc + waccStep;
+                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
+                    gSteps.forEach(gStep => {
+                        const currentG = g + gStep;
+                        const result = calculateSingleStagePE(roic, currentG, t, currentWacc);
+                        let val = (result.value && isFinite(result.value)) ? result.value.toFixed(2) : 'N/A';
+                        tableHtml += `<td class="p-2 border ${waccStep === 0 && gStep === 0 ? 'highlight-cell' : ''}">${val}</td>`;
+                    });
+                    tableHtml += '</tr>';
+                });
+                tableHtml += '</tbody></table>';
+                ss.tableContainer.innerHTML = tableHtml;
+            }
+
+            function updateSingleStageUI() {
+                const params = {};
+                for (const key in ss.inputs) { params[key] = parseFloat(ss.inputs[key].num.value); }
+                const result = calculateSingleStagePE(params.roic, params.g, params.t, params.wacc);
+                if (result.error) {
+                    showError(ss.errorContainer, result.error);
+                    ss.resultsContainer.classList.add('hidden');
+                } else {
+                    hideError(ss.errorContainer);
+                    ss.resultsContainer.classList.remove('hidden');
+                    displayResult(ss.peResultEl, result.value);
+                    generateSingleStageSensitivityTable(params);
+                }
+            }
+
+            // --- Tab Switching Logic ---
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const modelContents = document.querySelectorAll('.model-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const model = button.getAttribute('data-model');
+                    modelContents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== `${model}-model`);
+                    });
+                    // Recalculate when switching tabs
+                    if (model === 'two-stage') {
+                        updateTwoStageUI();
+                    } else if (model === 'single-stage') {
+                        updateSingleStageUI();
+                    }
+                });
+            });
+
+            // --- Initial Setup ---
+            for (const key in ts.inputs) { linkInputs(ts.inputs[key].num, ts.inputs[key].slider, updateTwoStageUI); }
+            for (const key in ss.inputs) { linkInputs(ss.inputs[key].num, ss.inputs[key].slider, updateSingleStageUI); }
+            ts.form.addEventListener('submit', (e) => e.preventDefault());
+            ss.form.addEventListener('submit', (e) => e.preventDefault());
+            
+            // Initial calculation for the default visible model
+            updateTwoStageUI();
+        });
+    </script>
+</body>
+</html>

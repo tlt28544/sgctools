@@ -126,24 +126,28 @@
                         <h2 class="text-xl font-semibold mb-6 border-b pb-3">Input Parameters</h2>
                         <form id="two-stage-form" class="space-y-6">
                             <div>
-                                <div class="input-group"><label for="ts-roic">ROIC</label><input type="number" id="ts-roic" value="15" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ts-roic">ROIC (%)</label><input type="number" id="ts-roic" value="15" step="0.1" class="input-field"></div>
                                 <input type="range" id="ts-roic-slider" min="0" max="50" value="15" step="0.1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ts-g1">Growth Rate - Stage 1 (g1)</label><input type="number" id="ts-g1" value="10" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ts-g1">Growth Rate - Stage 1 (g1, %)</label><input type="number" id="ts-g1" value="10" step="0.1" class="input-field"></div>
                                 <input type="range" id="ts-g1-slider" min="0" max="30" value="10" step="0.1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ts-t">Duration of Stage 1 (T)</label><input type="number" id="ts-t" value="5" step="1" class="input-field"></div>
+                                <div class="input-group"><label for="ts-t">Duration of Stage 1 (T, years)</label><input type="number" id="ts-t" value="5" step="1" class="input-field"></div>
                                 <input type="range" id="ts-t-slider" min="1" max="20" value="5" step="1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ts-g2">Perpetual Growth Rate (g2)</label><input type="number" id="ts-g2" value="3" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ts-g2">Perpetual Growth Rate (g2, %)</label><input type="number" id="ts-g2" value="3" step="0.1" class="input-field"></div>
                                 <input type="range" id="ts-g2-slider" min="0" max="10" value="3" step="0.1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ts-wacc">WACC</label><input type="number" id="ts-wacc" value="8" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ts-wacc">WACC (%)</label><input type="number" id="ts-wacc" value="8" step="0.1" class="input-field"></div>
                                 <input type="range" id="ts-wacc-slider" min="1" max="20" value="8" step="0.1" class="slider mt-2">
+                            </div>
+                             <div>
+                                <div class="input-group"><label for="ts-da-ratio">Debt/Asset Ratio (%)</label><input type="number" id="ts-da-ratio" value="0" step="0.1" class="input-field"></div>
+                                <input type="range" id="ts-da-ratio-slider" min="0" max="80" value="0" step="0.1" class="slider mt-2">
                             </div>
                         </form>
                     </div>
@@ -161,11 +165,11 @@
                             </div>
                              <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
                                 <p class="text-xs text-gray-500 italic">
-                                    <strong>Method:</strong> Implied P/E is the sum of the present value of Free Cash Flows to the Firm (FCFF) during the high-growth period (Stage 1) and the present value of the terminal value.
+                                    <strong>Method:</strong> Implied P/E is derived from the Firm Value, adjusted for leverage. Firm Value is the sum of the present value of FCFF during Stage 1 and the present value of the terminal value.
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">P/E = PV(Stage 1 FCFF) + PV(Terminal Value)<br>where Terminal Value = FCFF_T+1 / (WACC - g2)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(Stage 1 FCFF) + PV(Terminal Value)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
                                 </p>
                             </div>
                         </div>
@@ -183,20 +187,24 @@
                         <h2 class="text-xl font-semibold mb-6 border-b pb-3">Input Parameters</h2>
                         <form id="single-stage-form" class="space-y-6">
                             <div>
-                                <div class="input-group"><label for="ss-roic">ROIC</label><input type="number" id="ss-roic" value="20" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ss-roic">ROIC (%)</label><input type="number" id="ss-roic" value="20" step="0.1" class="input-field"></div>
                                 <input type="range" id="ss-roic-slider" min="0" max="50" value="20" step="0.1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ss-g">Growth Rate (g)</label><input type="number" id="ss-g" value="15" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ss-g">Growth Rate (g, %)</label><input type="number" id="ss-g" value="15" step="0.1" class="input-field"></div>
                                 <input type="range" id="ss-g-slider" min="0" max="40" value="15" step="0.1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ss-t">Duration (T)</label><input type="number" id="ss-t" value="10" step="1" class="input-field"></div>
+                                <div class="input-group"><label for="ss-t">Duration (T, years)</label><input type="number" id="ss-t" value="10" step="1" class="input-field"></div>
                                 <input type="range" id="ss-t-slider" min="1" max="30" value="10" step="1" class="slider mt-2">
                             </div>
                             <div>
-                                <div class="input-group"><label for="ss-wacc">WACC</label><input type="number" id="ss-wacc" value="10" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ss-wacc">WACC (%)</label><input type="number" id="ss-wacc" value="10" step="0.1" class="input-field"></div>
                                 <input type="range" id="ss-wacc-slider" min="1" max="20" value="10" step="0.1" class="slider mt-2">
+                            </div>
+                             <div>
+                                <div class="input-group"><label for="ss-da-ratio">Debt/Asset Ratio (%)</label><input type="number" id="ss-da-ratio" value="0" step="0.1" class="input-field"></div>
+                                <input type="range" id="ss-da-ratio-slider" min="0" max="80" value="0" step="0.1" class="slider mt-2">
                             </div>
                         </form>
                     </div>
@@ -214,11 +222,11 @@
                             </div>
                             <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
                                 <p class="text-xs text-gray-500 italic">
-                                    <strong>Method:</strong> Implied P/E is the sum of the present value of FCFF during the explicit growth period and the present value of the residual value.
+                                    <strong>Method:</strong> Implied P/E is derived from the Firm Value, adjusted for leverage. Firm Value is the sum of the present value of FCFF during the growth period and the present value of the residual value.
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">P/E = PV(FCFF) + PV(Residual Value)<br>where Residual Value = NOPAT_T / WACC</span>
+                                    <span class="block formula mt-1">Firm Value = PV(FCFF) + PV(Residual Value)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
                                 </p>
                             </div>
                         </div>
@@ -278,11 +286,12 @@
                     t: { num: document.getElementById('ts-t'), slider: document.getElementById('ts-t-slider') },
                     g2: { num: document.getElementById('ts-g2'), slider: document.getElementById('ts-g2-slider') },
                     wacc: { num: document.getElementById('ts-wacc'), slider: document.getElementById('ts-wacc-slider') },
+                    daRatio: { num: document.getElementById('ts-da-ratio'), slider: document.getElementById('ts-da-ratio-slider') },
                 }
             };
 
-            function calculateTwoStagePE(roic, g1, t, g2, wacc) {
-                roic /= 100; g1 /= 100; g2 /= 100; wacc /= 100;
+            function calculateTwoStagePE(roic, g1, t, g2, wacc, daRatio) {
+                roic /= 100; g1 /= 100; g2 /= 100; wacc /= 100; daRatio /= 100;
                 if (wacc <= g2) return { error: 'WACC must be greater than Perpetual Growth Rate (g2).' };
                 if (roic <= 0) return { error: 'ROIC must be a positive number.' };
                 
@@ -296,11 +305,13 @@
                 const fcff_t1_ratio = nopat_t1_ratio * (1 - rr2);
                 const terminalValueT = fcff_t1_ratio / (wacc - g2);
                 const pvTerminalValue = terminalValueT / Math.pow(1 + wacc, t);
-                return { value: pvStage1 + pvTerminalValue };
+                const enterpriseValue = pvStage1 + pvTerminalValue;
+                const finalPE = enterpriseValue * (1 - daRatio);
+                return { value: finalPE };
             }
 
             function generateTwoStageSensitivityTable(params) {
-                const { roic, g1, t, g2, wacc } = params;
+                const { roic, g1, t, g2, wacc, daRatio } = params;
                 const waccSteps = [-1, -0.5, 0, 0.5, 1];
                 const g2Steps = [-0.5, -0.25, 0, 0.25, 0.5];
                 let tableHtml = '<table class="w-full border-collapse text-center">';
@@ -312,7 +323,7 @@
                     tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
                     g2Steps.forEach(g2Step => {
                         const currentG2 = g2 + g2Step;
-                        const result = calculateTwoStagePE(roic, g1, t, currentG2, currentWacc);
+                        const result = calculateTwoStagePE(roic, g1, t, currentG2, currentWacc, daRatio);
                         let val = (result.value && isFinite(result.value) && result.value > 0) ? result.value.toFixed(2) : 'N/A';
                         tableHtml += `<td class="p-2 border ${waccStep === 0 && g2Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
                     });
@@ -325,7 +336,7 @@
             function updateTwoStageUI() {
                 const params = {};
                 for (const key in ts.inputs) { params[key] = parseFloat(ts.inputs[key].num.value); }
-                const result = calculateTwoStagePE(params.roic, params.g1, params.t, params.g2, params.wacc);
+                const result = calculateTwoStagePE(params.roic, params.g1, params.t, params.g2, params.wacc, params.daRatio);
                 if (result.error) {
                     showError(ts.errorContainer, result.error);
                     ts.resultsContainer.classList.add('hidden');
@@ -349,20 +360,16 @@
                     g: { num: document.getElementById('ss-g'), slider: document.getElementById('ss-g-slider') },
                     t: { num: document.getElementById('ss-t'), slider: document.getElementById('ss-t-slider') },
                     wacc: { num: document.getElementById('ss-wacc'), slider: document.getElementById('ss-wacc-slider') },
+                    daRatio: { num: document.getElementById('ss-da-ratio'), slider: document.getElementById('ss-da-ratio-slider') },
                 }
             };
             
-            function calculateSingleStagePE(roic, g, t, wacc) {
-                // Convert percentages to decimals
-                roic /= 100; 
-                g /= 100; 
-                wacc /= 100;
+            function calculateSingleStagePE(roic, g, t, wacc, daRatio) {
+                roic /= 100; g /= 100; wacc /= 100; daRatio /= 100;
 
-                // Input Validation
                 if (roic <= 0) return { error: 'ROIC must be a positive number.' };
                 if (wacc <= 0) return { error: 'WACC must be a positive number.' };
 
-                // --- Part 1: PV of FCFF during the explicit period (T years) ---
                 const rr = g / roic;
                 let pvFcfPeriod = 0;
                 for (let i = 1; i <= t; i++) {
@@ -370,26 +377,18 @@
                     pvFcfPeriod += fcff_ratio / Math.pow(1 + wacc, i);
                 }
 
-                // --- Part 2: PV of Residual Value ---
-                // Residual Value = (NOPAT at T) / WACC, discounted to year 0.
-                // Assuming no growth after year T, so NOPAT_t+1 = NOPAT_t.
-                // NOPAT_t relative to NOPAT_0=1 is (1+g)^t
                 const nopatT = Math.pow(1 + g, t);
-                
-                // Residual value at time T (value of a no-growth perpetuity of NOPAT_t)
                 const residualValueT = nopatT / wacc;
-                
-                // Discount the residual value back to year 0
                 const pvResidualValue = residualValueT / Math.pow(1 + wacc, t);
 
-                // --- Total Implied P/E ---
-                const impliedPE = pvFcfPeriod + pvResidualValue;
+                const enterpriseValue = pvFcfPeriod + pvResidualValue;
+                const finalPE = enterpriseValue * (1 - daRatio);
                 
-                return { value: impliedPE };
+                return { value: finalPE };
             }
 
             function generateSingleStageSensitivityTable(params) {
-                const { roic, g, t, wacc } = params;
+                const { roic, g, t, wacc, daRatio } = params;
                 const waccSteps = [-1, -0.5, 0, 0.5, 1];
                 const gSteps = [-1, -0.5, 0, 0.5, 1];
                 let tableHtml = '<table class="w-full border-collapse text-center">';
@@ -401,7 +400,7 @@
                     tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
                     gSteps.forEach(gStep => {
                         const currentG = g + gStep;
-                        const result = calculateSingleStagePE(roic, currentG, t, currentWacc);
+                        const result = calculateSingleStagePE(roic, currentG, t, currentWacc, daRatio);
                         let val = (result.value && isFinite(result.value)) ? result.value.toFixed(2) : 'N/A';
                         tableHtml += `<td class="p-2 border ${waccStep === 0 && gStep === 0 ? 'highlight-cell' : ''}">${val}</td>`;
                     });
@@ -414,7 +413,7 @@
             function updateSingleStageUI() {
                 const params = {};
                 for (const key in ss.inputs) { params[key] = parseFloat(ss.inputs[key].num.value); }
-                const result = calculateSingleStagePE(params.roic, params.g, params.t, params.wacc);
+                const result = calculateSingleStagePE(params.roic, params.g, params.t, params.wacc, params.daRatio);
                 if (result.error) {
                     showError(ss.errorContainer, result.error);
                     ss.resultsContainer.classList.add('hidden');
@@ -437,7 +436,6 @@
                     modelContents.forEach(content => {
                         content.classList.toggle('hidden', content.id !== `${model}-model`);
                     });
-                    // Recalculate when switching tabs
                     if (model === 'two-stage') {
                         updateTwoStageUI();
                     } else if (model === 'single-stage') {
@@ -452,7 +450,6 @@
             ts.form.addEventListener('submit', (e) => e.preventDefault());
             ss.form.addEventListener('submit', (e) => e.preventDefault());
             
-            // Initial calculation for the default visible model
             updateTwoStageUI();
         });
     </script>

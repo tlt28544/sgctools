@@ -101,6 +101,34 @@
             border-radius: 0.25rem;
             color: #4B5563;
         }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details > summary::before {
+            content: '►';
+            margin-right: 0.5rem;
+            font-size: 0.6rem;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -113,12 +141,13 @@
 
         <!-- Tab Navigation -->
         <div class="flex border-b border-gray-200 mb-8 justify-center">
-            <button class="tab-btn active" data-model="two-stage">Two-Stage Model</button>
-            <button class="tab-btn" data-model="single-stage">Single-Stage Compound Model</button>
+            <button class="tab-btn active" data-tab="two-stage">Two-Stage Model</button>
+            <button class="tab-btn" data-tab="single-stage">Single-Stage Model</button>
+            <button class="tab-btn" data-tab="data-fetcher">Data Fetcher</button>
         </div>
 
         <!-- Two-Stage Model Content -->
-        <div id="two-stage-model" class="model-content">
+        <div id="two-stage-model" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Input Panel -->
                 <div class="lg:col-span-1">
@@ -179,7 +208,7 @@
         </div>
 
         <!-- Single-Stage Model Content -->
-        <div id="single-stage-model" class="model-content hidden">
+        <div id="single-stage-model" class="tab-content hidden">
              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Input Panel -->
                 <div class="lg:col-span-1">
@@ -229,6 +258,59 @@
                                     <span class="block formula mt-1">Firm Value = PV(FCFF) + PV(Residual Value)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Fetcher Content -->
+        <div id="data-fetcher-model" class="tab-content hidden">
+            <div class="card max-w-3xl mx-auto">
+                <h2 class="text-xl font-semibold mb-4 border-b pb-3">Fetch Financial Data</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="api-key" class="block text-sm font-medium text-gray-700">Financial Modeling Prep API Key</label>
+                        <input type="text" id="api-key" value="TWI6BSNJrYVyWtZ1rmES54rSRRwF2ZSx" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-2 text-xs text-gray-500">Get a free API key from <a href="https://site.financialmodelingprep.com/developer" target="_blank" class="text-blue-600 hover:underline">financialmodelingprep.com</a>.</p>
+                    </div>
+                    <div>
+                        <label for="ticker" class="block text-sm font-medium text-gray-700">Stock Ticker</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <input type="text" id="ticker" class="flex-1 block w-full rounded-none rounded-l-md border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="e.g., AAPL, 0700.HK">
+                            <button id="fetch-data-btn" class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 bg-gray-50 text-gray-700 rounded-r-md hover:bg-gray-100">Fetch Data</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="fetch-results" class="mt-6">
+                    <div id="loader" class="hidden mx-auto loader"></div>
+                    <div id="fetch-error" class="hidden error-message"></div>
+                    <div id="data-display" class="hidden">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">Fetched & Calculated Data</h3>
+                        <div class="mt-2 border-t border-gray-200">
+                            <dl class="divide-y divide-gray-200">
+                                <div class="py-3">
+                                    <div class="grid grid-cols-3 gap-4">
+                                        <dt class="text-sm font-medium text-gray-500">ROIC</dt>
+                                        <dd id="res-roic" class="text-sm text-gray-900 col-span-2 font-semibold"></dd>
+                                    </div>
+                                    <div class="pl-4 mt-1 space-y-1">
+                                        <details class="text-xs">
+                                            <summary class="cursor-pointer text-gray-500">NOPAT: <span id="res-nopat-val" class="text-gray-700 font-medium"></span></summary>
+                                            <div id="res-nopat-details" class="mt-1 p-2 bg-gray-50 rounded-md text-gray-600 leading-relaxed"></div>
+                                        </details>
+                                        <details class="text-xs">
+                                            <summary class="cursor-pointer text-gray-500">Invested Capital: <span id="res-invested-capital-val" class="text-gray-700 font-medium"></span></summary>
+                                            <div id="res-invested-capital-details" class="mt-1 p-2 bg-gray-50 rounded-md text-gray-600 leading-relaxed"></div>
+                                        </details>
+                                    </div>
+                                </div>
+                                <div class="py-3 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">WACC</dt><dd id="res-wacc" class="text-sm text-gray-900 col-span-2"></dd></div>
+                                <div class="py-3 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Debt/Asset Ratio</dt><dd id="res-da-ratio" class="text-sm text-gray-900 col-span-2"></dd></div>
+                            </dl>
+                        </div>
+                        <div class="mt-4">
+                            <button id="apply-data-btn" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Apply Data to Calculators</button>
                         </div>
                     </div>
                 </div>
@@ -366,24 +448,19 @@
             
             function calculateSingleStagePE(roic, g, t, wacc, daRatio) {
                 roic /= 100; g /= 100; wacc /= 100; daRatio /= 100;
-
                 if (roic <= 0) return { error: 'ROIC must be a positive number.' };
                 if (wacc <= 0) return { error: 'WACC must be a positive number.' };
-
                 const rr = g / roic;
                 let pvFcfPeriod = 0;
                 for (let i = 1; i <= t; i++) {
                     const fcff_ratio = Math.pow(1 + g, i) * (1 - rr);
                     pvFcfPeriod += fcff_ratio / Math.pow(1 + wacc, i);
                 }
-
                 const nopatT = Math.pow(1 + g, t);
                 const residualValueT = nopatT / wacc;
                 const pvResidualValue = residualValueT / Math.pow(1 + wacc, t);
-
                 const enterpriseValue = pvFcfPeriod + pvResidualValue;
                 const finalPE = enterpriseValue * (1 - daRatio);
-                
                 return { value: finalPE };
             }
 
@@ -425,22 +502,182 @@
                 }
             }
 
+            // --- Data Fetcher Logic ---
+            const fetcher = {
+                apiKeyInput: document.getElementById('api-key'),
+                tickerInput: document.getElementById('ticker'),
+                fetchBtn: document.getElementById('fetch-data-btn'),
+                applyBtn: document.getElementById('apply-data-btn'),
+                loader: document.getElementById('loader'),
+                errorDisplay: document.getElementById('fetch-error'),
+                dataDisplay: document.getElementById('data-display'),
+                results: {
+                    roic: document.getElementById('res-roic'),
+                    nopatVal: document.getElementById('res-nopat-val'),
+                    nopatDetails: document.getElementById('res-nopat-details'),
+                    investedCapVal: document.getElementById('res-invested-capital-val'),
+                    investedCapDetails: document.getElementById('res-invested-capital-details'),
+                    wacc: document.getElementById('res-wacc'),
+                    daRatio: document.getElementById('res-da-ratio'),
+                },
+                fetchedData: {}
+            };
+
+            fetcher.fetchBtn.addEventListener('click', async () => {
+                const apiKey = fetcher.apiKeyInput.value.trim();
+                const ticker = fetcher.tickerInput.value.trim().toUpperCase();
+
+                if (!apiKey) {
+                    showError(fetcher.errorDisplay, 'Please enter an API key.');
+                    return;
+                }
+                if (!ticker) {
+                    showError(fetcher.errorDisplay, 'Please enter a stock ticker.');
+                    return;
+                }
+
+                hideError(fetcher.errorDisplay);
+                fetcher.dataDisplay.classList.add('hidden');
+                fetcher.loader.classList.remove('hidden');
+
+                try {
+                    const baseUrl = 'https://financialmodelingprep.com/api/v3/';
+                    const endpoints = [
+                        `profile/${ticker}`,
+                        `balance-sheet-statement/${ticker}?period=annual&limit=1`,
+                        `income-statement/${ticker}?period=annual&limit=1`,
+                    ];
+                    
+                    const requests = endpoints.map(endpoint => {
+                        const separator = endpoint.includes('?') ? '&' : '?';
+                        const url = `${baseUrl}${endpoint}${separator}apikey=${apiKey}`;
+                        return fetch(url).then(res => res.json());
+                    });
+                    
+                    const [profileData, balanceSheetData, incomeStatementData] = await Promise.all(requests);
+                    
+                    const allData = [profileData, balanceSheetData, incomeStatementData];
+                     for (const data of allData) {
+                        if (!data || (Array.isArray(data) && data.length === 0)) {
+                            throw new Error(`No data returned for one of the API endpoints. Please check the ticker symbol.`);
+                        }
+                        const errorMessage = data["Error Message"] || (data[0] && data[0]["Error Message"]);
+                        if (errorMessage) {
+                             throw new Error(`API Error: ${errorMessage}`);
+                        }
+                    }
+
+                    const profile = profileData[0];
+                    const balanceSheet = balanceSheetData[0];
+                    const incomeStatement = incomeStatementData[0];
+
+                    const formatMillion = (num) => `$${(num / 1e6).toFixed(2)}M`;
+
+                    // --- NOPAT Calculation ---
+                    const incomeBeforeTax = incomeStatement.incomeBeforeTax || 0;
+                    const taxRate = incomeBeforeTax > 0 ? (incomeStatement.incomeTaxExpense / incomeBeforeTax) : 0.21;
+                    const ebit = (incomeStatement.ebitda || 0) - (incomeStatement.depreciationAndAmortization || 0);
+                    const nopat = ebit * (1 - taxRate);
+
+                    // --- Invested Capital Calculation ---
+                    const equity = balanceSheet.totalStockholdersEquity || 0;
+                    const debt = balanceSheet.totalDebt || 0;
+                    const minorityInterest = balanceSheet.minorityInterest || 0;
+                    const cash = balanceSheet.cashAndCashEquivalents || 0;
+                    const goodwill = balanceSheet.goodwill || 0;
+                    const shortTermInvestments = balanceSheet.shortTermInvestments || 0;
+                    const longTermInvestments = balanceSheet.longTermInvestments || 0;
+                    const revenue = incomeStatement.revenue || 0;
+                    const operatingCash = revenue * 0.05;
+                    const investedCapital = equity + debt + minorityInterest - cash - goodwill - shortTermInvestments - longTermInvestments + operatingCash;
+                    
+                    const roic = investedCapital !== 0 ? (nopat / investedCapital) * 100 : 0;
+
+                    // --- WACC & D/A Ratio Calculation ---
+                    const marketCap = profile.mktCap || 0;
+                    const V = marketCap + debt;
+                    const costOfEquity = 0.045 + (profile.beta || 1) * 0.055;
+                    const costOfDebt = debt > 0 ? ((incomeStatement.interestExpense || 0) / debt) : 0.05;
+                    const wacc = V > 0 ? ((marketCap / V) * costOfEquity + (debt / V) * costOfDebt * (1 - taxRate)) * 100 : 0;
+                    const totalAssets = balanceSheet.totalAssets || 0;
+                    const daRatio = totalAssets > 0 ? (debt / totalAssets) * 100 : 0;
+
+                    fetcher.fetchedData = { roic, wacc, daRatio };
+                    
+                    // --- Display Results & Details ---
+                    fetcher.results.roic.textContent = `${roic.toFixed(2)}%`;
+                    fetcher.results.nopatVal.textContent = formatMillion(nopat);
+                    fetcher.results.nopatDetails.innerHTML = `EBIT * (1 - Tax Rate) <br> = ${formatMillion(ebit)} * (1 - ${taxRate.toFixed(2)})`;
+                    fetcher.results.investedCapVal.textContent = formatMillion(investedCapital);
+                    fetcher.results.investedCapDetails.innerHTML = `
+                        Equity: ${formatMillion(equity)}<br>
+                        + Total Debt: ${formatMillion(debt)}<br>
+                        + Minority Int: ${formatMillion(minorityInterest)}<br>
+                        - Cash: ${formatMillion(cash)}<br>
+                        - Goodwill: ${formatMillion(goodwill)}<br>
+                        - ST Invest: ${formatMillion(shortTermInvestments)}<br>
+                        - LT Invest: ${formatMillion(longTermInvestments)}<br>
+                        + Op. Cash (5% Rev): ${formatMillion(operatingCash)}
+                    `;
+                    fetcher.results.wacc.textContent = `${wacc.toFixed(2)}%`;
+                    fetcher.results.daRatio.textContent = `${daRatio.toFixed(2)}%`;
+                    
+                    fetcher.dataDisplay.classList.remove('hidden');
+
+                } catch (err) {
+                    let finalErrorMessage = err.message || 'An error occurred while fetching data.';
+                    if (finalErrorMessage.includes("API Error:")) {
+                        finalErrorMessage += " Please check your API key or subscription plan on FMP's website.";
+                    }
+                    showError(fetcher.errorDisplay, finalErrorMessage);
+                } finally {
+                    fetcher.loader.classList.add('hidden');
+                }
+            });
+
+            fetcher.applyBtn.addEventListener('click', () => {
+                const { roic, wacc, daRatio } = fetcher.fetchedData;
+                if (roic === undefined) return;
+
+                // Apply to Two-Stage Model
+                ts.inputs.roic.num.value = roic.toFixed(2);
+                ts.inputs.roic.slider.value = roic.toFixed(2);
+                ts.inputs.wacc.num.value = wacc.toFixed(2);
+                ts.inputs.wacc.slider.value = wacc.toFixed(2);
+                ts.inputs.daRatio.num.value = daRatio.toFixed(2);
+                ts.inputs.daRatio.slider.value = daRatio.toFixed(2);
+                updateTwoStageUI();
+                
+                // Apply to Single-Stage Model
+                ss.inputs.roic.num.value = roic.toFixed(2);
+                ss.inputs.roic.slider.value = roic.toFixed(2);
+                ss.inputs.wacc.num.value = wacc.toFixed(2);
+                ss.inputs.wacc.slider.value = wacc.toFixed(2);
+                ss.inputs.daRatio.num.value = daRatio.toFixed(2);
+                ss.inputs.daRatio.slider.value = daRatio.toFixed(2);
+                updateSingleStageUI();
+
+                const toast = document.createElement('div');
+                toast.textContent = 'Data has been applied to the calculators!';
+                toast.className = 'fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg';
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            });
+
+
             // --- Tab Switching Logic ---
             const tabButtons = document.querySelectorAll('.tab-btn');
-            const modelContents = document.querySelectorAll('.model-content');
+            const tabContents = document.querySelectorAll('.tab-content');
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     tabButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    const model = button.getAttribute('data-model');
-                    modelContents.forEach(content => {
-                        content.classList.toggle('hidden', content.id !== `${model}-model`);
+                    const tab = button.getAttribute('data-tab');
+                    tabContents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== `${tab}-model`);
                     });
-                    if (model === 'two-stage') {
-                        updateTwoStageUI();
-                    } else if (model === 'single-stage') {
-                        updateSingleStageUI();
-                    }
                 });
             });
 

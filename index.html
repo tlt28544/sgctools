@@ -136,7 +136,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
         <header class="text-center mb-4">
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Implied P/E Calculator</h1>
@@ -188,7 +188,7 @@
 
         <!-- Two-Stage Model Content -->
         <div id="two-stage-model" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 <!-- Input Panel -->
                 <div class="lg:col-span-1">
                     <div class="card sticky top-8">
@@ -249,7 +249,7 @@
 
         <!-- Single-Stage Model Content -->
         <div id="single-stage-model" class="tab-content hidden">
-             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 <!-- Input Panel -->
                 <div class="lg:col-span-1">
                     <div class="card sticky top-8">
@@ -319,7 +319,7 @@
                             <div>
                                 <label for="ticker" class="block text-sm font-medium text-gray-700">Stock Ticker</label>
                                 <div class="mt-1 flex rounded-md shadow-sm">
-                                    <input type="text" id="ticker" class="flex-1 block w-full rounded-none rounded-l-md border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="e.g., MSFT">
+                                    <input type="text" id="ticker" class="flex-1 block w-full rounded-none rounded-l-md border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="e.g., AAPL, 0700.HK">
                                     <button id="fetch-data-btn" class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 bg-gray-50 text-gray-700 rounded-r-md hover:bg-gray-100">Fetch Data</button>
                                 </div>
                             </div>
@@ -590,48 +590,47 @@
                 symbolOverviewContainer.innerHTML = '';
                 financialsContainer.innerHTML = '';
 
+                const symbolOnly = tvTicker.split(':')[1] || tvTicker;
+
                 // --- Symbol Overview Widget ---
-                new TradingView.widget(
-                  {
-                  "container_id": "tv-symbol-overview-widget-container",
-                  "symbols": [
-                    [
-                      tvTicker,
-                      tvTicker + "|1D"
-                    ]
-                  ],
-                  "chartOnly": false,
-                  "width": "100%",
-                  "height": 500,
-                  "locale": "en",
-                  "colorTheme": "light",
-                  "autosize": true,
-                  "showVolume": false,
-                  "hideDateRanges": false,
-                  "hideMarketStatus": false,
-                  "hideSymbolLogo": false,
-                  "scalePosition": "right",
-                  "scaleMode": "Normal",
-                  "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-                  "fontSize": "10",
-                  "noTimeScale": false,
-                  "valuesTracking": "1",
-                  "changeMode": "price-and-percent",
-                  "chartType": "area",
-                  "lineWidth": 2
+                const overviewDiv = document.createElement('div');
+                overviewDiv.className = 'tradingview-widget-container__widget';
+                symbolOverviewContainer.appendChild(overviewDiv);
+
+                const overviewScript = document.createElement('script');
+                overviewScript.type = 'text/javascript';
+                overviewScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js';
+                overviewScript.async = true;
+                overviewScript.innerHTML = JSON.stringify({
+                    "lineWidth": 2, "lineType": 0, "chartType": "area", "fontColor": "rgb(106, 109, 120)",
+                    "gridLineColor": "rgba(46, 46, 46, 0.06)", "volumeUpColor": "rgba(34, 171, 148, 0.5)",
+                    "volumeDownColor": "rgba(247, 82, 95, 0.5)", "backgroundColor": "#ffffff", "widgetFontColor": "#0F0F0F",
+                    "upColor": "#22ab94", "downColor": "#f7525f", "borderUpColor": "#22ab94", "borderDownColor": "#f7525f",
+                    "wickUpColor": "#22ab94", "wickDownColor": "#f7525f", "colorTheme": "light", "isTransparent": false,
+                    "locale": "en", "chartOnly": false, "scalePosition": "right", "scaleMode": "Normal",
+                    "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
+                    "valuesTracking": "1", "changeMode": "price-and-percent",
+                    "symbols": [ [ symbolOnly, tvTicker + "|1D" ] ],
+                    "dateRanges": ["1d|1", "1m|30", "3m|60", "12m|1D", "60m|1W", "all|1M"],
+                    "fontSize": "10", "headerFontSize": "medium", "autosize": true, "width": "100%", "height": 300,
+                    "noTimeScale": false, "hideDateRanges": false, "hideMarketStatus": false, "hideSymbolLogo": false
                 });
+                symbolOverviewContainer.appendChild(overviewScript);
 
                 // --- Financials Widget ---
-                new TradingView.widget({
-                  "container_id": "tv-financials-widget-container",
-                  "symbol": tvTicker,
-                  "colorTheme": "light",
-                  "isTransparent": false,
-                  "locale": "en",
-                  "width": "100%",
-                  "height": 650,
-                  "displayMode": "regular"
+                const financialsDiv = document.createElement('div');
+                financialsDiv.className = 'tradingview-widget-container__widget';
+                financialsContainer.appendChild(financialsDiv);
+
+                const financialsScript = document.createElement('script');
+                financialsScript.type = 'text/javascript';
+                financialsScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-financials.js';
+                financialsScript.async = true;
+                financialsScript.innerHTML = JSON.stringify({
+                    "symbol": tvTicker, "colorTheme": "light", "displayMode": "regular", "isTransparent": false,
+                    "locale": "en", "width": "100%", "height": 800
                 });
+                financialsContainer.appendChild(financialsScript);
 
                 fetcher.tvWidgets.classList.remove('hidden');
             }

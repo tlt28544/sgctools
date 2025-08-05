@@ -153,22 +153,14 @@
               "title": "S&P 500 Index"
             },
             {
-              "proName": "FX_IDC:USDCNY",
-              "title": "CNY to USD"
+              "proName": "FOREXCOM:NSXUSD",
+              "title": "US 100 Cash CFD"
             },
             {
-              "proName": "OANDA:XAUUSD",
-              "title": "GOLD"
+              "proName": "FX_IDC:EURUSD",
+              "title": "EUR to USD"
             },
             {
-              "proName": "HSI:HSI",
-              "title": "HSI"
-            },
-              {
-              "proName": "HSI:HSCEI",
-              "title": "HSCEI"
-            },
-              {
               "proName": "BITSTAMP:BTCUSD",
               "title": "Bitcoin"
             },
@@ -190,6 +182,7 @@
         <!-- Tab Navigation -->
         <div class="flex border-b border-gray-200 mb-8 justify-center">
             <button class="tab-btn active" data-tab="two-stage">Two-Stage Model</button>
+            <button class="tab-btn" data-tab="three-stage">Three-Stage Model</button>
             <button class="tab-btn" data-tab="single-stage">Single-Stage Model</button>
             <button class="tab-btn" data-tab="data-fetcher">Data Fetcher</button>
         </div>
@@ -247,6 +240,75 @@
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
                                     <span class="block formula mt-1">Firm Value = PV(Stage 1 FCFF) + PV(Terminal Value)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Three-Stage Model Content -->
+        <div id="three-stage-model" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <!-- Input Panel -->
+                <div class="lg:col-span-1">
+                    <div class="card sticky top-8">
+                        <h2 class="text-xl font-semibold mb-6 border-b pb-3">Input Parameters</h2>
+                        <form id="three-stage-form" class="space-y-5">
+                            <div>
+                                <div class="input-group"><label for="ths-roic">ROIC (%)</label><input type="number" id="ths-roic" value="25" step="0.1" class="input-field"></div>
+                                <input type="range" id="ths-roic-slider" min="0" max="50" value="25" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ths-g1">Growth Rate - Stage 1 (g1, %)</label><input type="number" id="ths-g1" value="20" step="0.1" class="input-field"></div>
+                                <input type="range" id="ths-g1-slider" min="0" max="40" value="20" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ths-t1">Duration of Stage 1 (T1, years)</label><input type="number" id="ths-t1" value="5" step="1" class="input-field"></div>
+                                <input type="range" id="ths-t1-slider" min="1" max="20" value="5" step="1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ths-g2">Growth Rate - Stage 2 (g2, %)</label><input type="number" id="ths-g2" value="10" step="0.1" class="input-field"></div>
+                                <input type="range" id="ths-g2-slider" min="0" max="30" value="10" step="0.1" class="slider mt-2">
+                            </div>
+                             <div>
+                                <div class="input-group"><label for="ths-t2">Duration of Stage 2 (T2, years)</label><input type="number" id="ths-t2" value="5" step="1" class="input-field"></div>
+                                <input type="range" id="ths-t2-slider" min="1" max="20" value="5" step="1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ths-g3">Perpetual Growth Rate (g3, %)</label><input type="number" id="ths-g3" value="3" step="0.1" class="input-field"></div>
+                                <input type="range" id="ths-g3-slider" min="0" max="10" value="3" step="0.1" class="slider mt-2">
+                            </div>
+                            <div>
+                                <div class="input-group"><label for="ths-wacc">WACC (%)</label><input type="number" id="ths-wacc" value="9" step="0.1" class="input-field"></div>
+                                <input type="range" id="ths-wacc-slider" min="1" max="20" value="9" step="0.1" class="slider mt-2">
+                            </div>
+                             <div>
+                                <div class="input-group"><label for="ths-da-ratio">Debt/Asset Ratio (%)</label><input type="number" id="ths-da-ratio" value="0" step="0.1" class="input-field"></div>
+                                <input type="range" id="ths-da-ratio-slider" min="0" max="80" value="0" step="0.1" class="slider mt-2">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- Output Panel -->
+                <div class="lg:col-span-2">
+                    <div class="card">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3">Calculation Results</h2>
+                        <div id="ths-error-container" class="hidden"></div>
+                        <div id="ths-results-container">
+                            <div class="text-center py-8"><p class="text-lg text-gray-600">Implied P/E</p><p id="ths-pe-result" class="text-5xl font-bold text-blue-600 my-2">--</p></div>
+                            <div class="mt-8">
+                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs WACC & g3)</h3>
+                                <div id="ths-sensitivity-table-container" class="overflow-x-auto"></div>
+                            </div>
+                             <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
+                                <p class="text-xs text-gray-500 italic">
+                                    <strong>Method:</strong> Implied P/E is derived from Firm Value, which is the sum of the present value of FCFF during Stage 1, Stage 2, and the present value of the terminal value.
+                                </p>
+                                <p class="text-xs text-gray-500 italic">
+                                    <strong>Formula:</strong>
+                                    <span class="block formula mt-1">Firm Value = PV(Stage 1) + PV(Stage 2) + PV(Terminal)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
                                 </p>
                             </div>
                         </div>
@@ -488,6 +550,100 @@
                     generateTwoStageSensitivityTable(params);
                 }
             }
+            
+            // --- Three-Stage Model Logic ---
+            const ths = {
+                form: document.getElementById('three-stage-form'),
+                peResultEl: document.getElementById('ths-pe-result'),
+                tableContainer: document.getElementById('ths-sensitivity-table-container'),
+                errorContainer: document.getElementById('ths-error-container'),
+                resultsContainer: document.getElementById('ths-results-container'),
+                inputs: {
+                    roic: { num: document.getElementById('ths-roic'), slider: document.getElementById('ths-roic-slider') },
+                    g1: { num: document.getElementById('ths-g1'), slider: document.getElementById('ths-g1-slider') },
+                    t1: { num: document.getElementById('ths-t1'), slider: document.getElementById('ths-t1-slider') },
+                    g2: { num: document.getElementById('ths-g2'), slider: document.getElementById('ths-g2-slider') },
+                    t2: { num: document.getElementById('ths-t2'), slider: document.getElementById('ths-t2-slider') },
+                    g3: { num: document.getElementById('ths-g3'), slider: document.getElementById('ths-g3-slider') },
+                    wacc: { num: document.getElementById('ths-wacc'), slider: document.getElementById('ths-wacc-slider') },
+                    daRatio: { num: document.getElementById('ths-da-ratio'), slider: document.getElementById('ths-da-ratio-slider') },
+                }
+            };
+
+            function calculateThreeStagePE(roic, g1, t1, g2, t2, g3, wacc, daRatio) {
+                roic /= 100; g1 /= 100; g2 /= 100; g3 /= 100; wacc /= 100; daRatio /= 100;
+                if (wacc <= g3) return { error: 'WACC must be greater than Perpetual Growth Rate (g3).' };
+                if (roic <= 0) return { error: 'ROIC must be a positive number.' };
+
+                let pvTotal = 0;
+                let nopat_ratio = 1;
+                
+                // Stage 1
+                const rr1 = g1 / roic;
+                for (let i = 1; i <= t1; i++) {
+                    nopat_ratio *= (1 + g1);
+                    const fcff_ratio = nopat_ratio * (1 - rr1);
+                    pvTotal += fcff_ratio / Math.pow(1 + wacc, i);
+                }
+
+                // Stage 2
+                const rr2 = g2 / roic;
+                for (let i = 1; i <= t2; i++) {
+                    nopat_ratio *= (1 + g2);
+                    const fcff_ratio = nopat_ratio * (1 - rr2);
+                    pvTotal += fcff_ratio / Math.pow(1 + wacc, t1 + i);
+                }
+
+                // Stage 3 (Terminal Value)
+                const rr3 = g3 / roic;
+                const nopat_t_plus_1_ratio = nopat_ratio * (1 + g3);
+                const fcff_t_plus_1_ratio = nopat_t_plus_1_ratio * (1 - rr3);
+                const terminalValueT = fcff_t_plus_1_ratio / (wacc - g3);
+                const pvTerminalValue = terminalValueT / Math.pow(1 + wacc, t1 + t2);
+
+                const enterpriseValue = pvTotal + pvTerminalValue;
+                const finalPE = enterpriseValue * (1 - daRatio);
+                return { value: finalPE };
+            }
+
+            function generateThreeStageSensitivityTable(params) {
+                const { roic, g1, t1, g2, t2, g3, wacc, daRatio } = params;
+                const waccSteps = [-1, -0.5, 0, 0.5, 1];
+                const g3Steps = [-0.5, -0.25, 0, 0.25, 0.5];
+                let tableHtml = '<table class="w-full border-collapse text-center">';
+                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">WACC \\ g3</th>';
+                g3Steps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g3 + step).toFixed(2)}%</th>`; });
+                tableHtml += '</tr></thead><tbody>';
+                waccSteps.forEach(waccStep => {
+                    const currentWacc = wacc + waccStep;
+                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
+                    g3Steps.forEach(g3Step => {
+                        const currentG3 = g3 + g3Step;
+                        const result = calculateThreeStagePE(roic, g1, t1, g2, t2, currentG3, currentWacc, daRatio);
+                        let val = (result.value && isFinite(result.value) && result.value > 0) ? result.value.toFixed(2) : 'N/A';
+                        tableHtml += `<td class="p-2 border ${waccStep === 0 && g3Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
+                    });
+                    tableHtml += '</tr>';
+                });
+                tableHtml += '</tbody></table>';
+                ths.tableContainer.innerHTML = tableHtml;
+            }
+            
+            function updateThreeStageUI() {
+                const params = {};
+                for (const key in ths.inputs) { params[key] = parseFloat(ths.inputs[key].num.value); }
+                const result = calculateThreeStagePE(params.roic, params.g1, params.t1, params.g2, params.t2, params.g3, params.wacc, params.daRatio);
+                if (result.error) {
+                    showError(ths.errorContainer, result.error);
+                    ths.resultsContainer.classList.add('hidden');
+                } else {
+                    hideError(ths.errorContainer);
+                    ths.resultsContainer.classList.remove('hidden');
+                    displayResult(ths.peResultEl, result.value);
+                    generateThreeStageSensitivityTable(params);
+                }
+            }
+
 
             // --- Single-Stage Model Logic ---
             const ss = {
@@ -773,6 +929,15 @@
                 ts.inputs.daRatio.num.value = daRatio.toFixed(2);
                 ts.inputs.daRatio.slider.value = daRatio.toFixed(2);
                 updateTwoStageUI();
+
+                // Apply to Three-Stage Model
+                ths.inputs.roic.num.value = roic.toFixed(2);
+                ths.inputs.roic.slider.value = roic.toFixed(2);
+                ths.inputs.wacc.num.value = wacc.toFixed(2);
+                ths.inputs.wacc.slider.value = wacc.toFixed(2);
+                ths.inputs.daRatio.num.value = daRatio.toFixed(2);
+                ths.inputs.daRatio.slider.value = daRatio.toFixed(2);
+                updateThreeStageUI();
                 
                 // Apply to Single-Stage Model
                 ss.inputs.roic.num.value = roic.toFixed(2);
@@ -809,8 +974,10 @@
 
             // --- Initial Setup ---
             for (const key in ts.inputs) { linkInputs(ts.inputs[key].num, ts.inputs[key].slider, updateTwoStageUI); }
+            for (const key in ths.inputs) { linkInputs(ths.inputs[key].num, ths.inputs[key].slider, updateThreeStageUI); }
             for (const key in ss.inputs) { linkInputs(ss.inputs[key].num, ss.inputs[key].slider, updateSingleStageUI); }
             ts.form.addEventListener('submit', (e) => e.preventDefault());
+            ths.form.addEventListener('submit', (e) => e.preventDefault());
             ss.form.addEventListener('submit', (e) => e.preventDefault());
             
             updateTwoStageUI();

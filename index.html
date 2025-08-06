@@ -228,7 +228,7 @@
                                 <input type="range" id="ts-wacc-slider" min="1" max="20" value="8" step="0.1" class="slider mt-2">
                             </div>
                              <div>
-                                <div class="input-group"><label for="ts-da-ratio">Debt/Asset Ratio (%)</label><input type="number" id="ts-da-ratio" value="0" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ts-da-ratio">Net Debt/Asset Ratio (%)</label><input type="number" id="ts-da-ratio" value="0" step="0.1" class="input-field"></div>
                                 <input type="range" id="ts-da-ratio-slider" min="0" max="80" value="0" step="0.1" class="slider mt-2">
                             </div>
                         </form>
@@ -251,7 +251,7 @@
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">Firm Value = PV(Stage 1 FCFF) + PV(Terminal Value)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(Stage 1 FCFF) + PV(Terminal Value)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)</span>
                                 </p>
                             </div>
                         </div>
@@ -297,7 +297,7 @@
                                 <input type="range" id="ths-wacc-slider" min="1" max="20" value="9" step="0.1" class="slider mt-2">
                             </div>
                              <div>
-                                <div class="input-group"><label for="ths-da-ratio">Debt/Asset Ratio (%)</label><input type="number" id="ths-da-ratio" value="0" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ths-da-ratio">Net Debt/Asset Ratio (%)</label><input type="number" id="ths-da-ratio" value="0" step="0.1" class="input-field"></div>
                                 <input type="range" id="ths-da-ratio-slider" min="0" max="80" value="0" step="0.1" class="slider mt-2">
                             </div>
                         </form>
@@ -320,7 +320,7 @@
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">Firm Value = PV(Stage 1) + PV(Stage 2) + PV(Terminal)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(Stage 1) + PV(Stage 2) + PV(Terminal)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)</span>
                                 </p>
                             </div>
                         </div>
@@ -354,7 +354,7 @@
                                 <input type="range" id="ss-wacc-slider" min="1" max="20" value="10" step="0.1" class="slider mt-2">
                             </div>
                              <div>
-                                <div class="input-group"><label for="ss-da-ratio">Debt/Asset Ratio (%)</label><input type="number" id="ss-da-ratio" value="0" step="0.1" class="input-field"></div>
+                                <div class="input-group"><label for="ss-da-ratio">Net Debt/Asset Ratio (%)</label><input type="number" id="ss-da-ratio" value="0" step="0.1" class="input-field"></div>
                                 <input type="range" id="ss-da-ratio-slider" min="0" max="80" value="0" step="0.1" class="slider mt-2">
                             </div>
                         </form>
@@ -377,7 +377,7 @@
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">Firm Value = PV(FCFF) + PV(Residual Value)<br>Implied P/E ≈ Firm Value * (1 - Debt/Asset Ratio)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(FCFF) + PV(Residual Value)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)</span>
                                 </p>
                             </div>
                         </div>
@@ -430,7 +430,7 @@
                                             </div>
                                         </div>
                                         <div class="py-3 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">WACC</dt><dd id="res-wacc" class="text-sm text-gray-900 col-span-2"></dd></div>
-                                        <div class="py-3 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Debt/Asset Ratio</dt><dd id="res-da-ratio" class="text-sm text-gray-900 col-span-2"></dd></div>
+                                        <div class="py-3 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Net Debt/Asset Ratio</dt><dd id="res-da-ratio" class="text-sm text-gray-900 col-span-2"></dd></div>
                                     </dl>
                                 </div>
                                 <div class="mt-4">
@@ -882,14 +882,16 @@
                     
                     const roic = investedCapital !== 0 ? (nopat / investedCapital) * 100 : 0;
 
-                    // --- WACC & D/A Ratio Calculation ---
+                    // --- WACC & Net Debt/Asset Ratio Calculation ---
                     const marketCap = profile.mktCap || 0;
                     const V = marketCap + debt;
                     const costOfEquity = 0.045 + (profile.beta || 1) * 0.055;
                     const costOfDebt = debt > 0 ? ((incomeStatement.interestExpense || 0) / debt) : 0.05;
                     const wacc = V > 0 ? ((marketCap / V) * costOfEquity + (debt / V) * costOfDebt * (1 - taxRate)) * 100 : 0;
+                    
                     const totalAssets = balanceSheet.totalAssets || 0;
-                    const daRatio = totalAssets > 0 ? (debt / totalAssets) * 100 : 0;
+                    const netDebt = debt - cash - shortTermInvestments;
+                    const daRatio = totalAssets > 0 ? (netDebt / totalAssets) * 100 : 0;
 
                     fetcher.fetchedData = { roic, wacc, daRatio };
                     

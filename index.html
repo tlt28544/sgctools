@@ -242,7 +242,7 @@
                         <div id="ts-results-container">
                             <div class="text-center py-8"><p class="text-lg text-gray-600">Implied P/E</p><p id="ts-pe-result" class="text-5xl font-bold text-blue-600 my-2">--</p></div>
                             <div class="mt-8">
-                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs WACC & g2)</h3>
+                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs ROIC & g1)</h3>
                                 <div id="ts-sensitivity-table-container" class="overflow-x-auto"></div>
                             </div>
                              <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
@@ -251,7 +251,7 @@
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">Firm Value = PV(Stage 1 FCFF) + PV(Terminal Value)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(Stage 1 FCFF) + PV(Terminal Value)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)<br><small>Net Debt = Total Debt - Cash - Short-term Investments (min 0)</small></span>
                                 </p>
                             </div>
                         </div>
@@ -311,7 +311,7 @@
                         <div id="ths-results-container">
                             <div class="text-center py-8"><p class="text-lg text-gray-600">Implied P/E</p><p id="ths-pe-result" class="text-5xl font-bold text-blue-600 my-2">--</p></div>
                             <div class="mt-8">
-                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs WACC & g3)</h3>
+                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs ROIC & g1)</h3>
                                 <div id="ths-sensitivity-table-container" class="overflow-x-auto"></div>
                             </div>
                              <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
@@ -320,7 +320,7 @@
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">Firm Value = PV(Stage 1) + PV(Stage 2) + PV(Terminal)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(Stage 1) + PV(Stage 2) + PV(Terminal)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)<br><small>Net Debt = Total Debt - Cash - Short-term Investments (min 0)</small></span>
                                 </p>
                             </div>
                         </div>
@@ -368,7 +368,7 @@
                         <div id="ss-results-container">
                             <div class="text-center py-8"><p class="text-lg text-gray-600">Implied P/E</p><p id="ss-pe-result" class="text-5xl font-bold text-blue-600 my-2">--</p></div>
                             <div class="mt-8">
-                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs WACC & Growth Rate)</h3>
+                                <h3 class="text-lg font-semibold mb-4 text-center">Sensitivity Analysis (vs ROIC & Growth Rate)</h3>
                                 <div id="ss-sensitivity-table-container" class="overflow-x-auto"></div>
                             </div>
                             <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
@@ -377,7 +377,7 @@
                                 </p>
                                 <p class="text-xs text-gray-500 italic">
                                     <strong>Formula:</strong>
-                                    <span class="block formula mt-1">Firm Value = PV(FCFF) + PV(Residual Value)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)</span>
+                                    <span class="block formula mt-1">Firm Value = PV(FCFF) + PV(Residual Value)<br>Implied P/E ≈ Firm Value * (1 - Net Debt/Asset Ratio)<br><small>Net Debt = Total Debt - Cash - Short-term Investments (min 0)</small></span>
                                 </p>
                             </div>
                         </div>
@@ -507,6 +507,7 @@
 
             function calculateTwoStagePE(roic, g1, t, g2, wacc, daRatio) {
                 roic /= 100; g1 /= 100; g2 /= 100; wacc /= 100; daRatio /= 100;
+                daRatio = Math.max(0, daRatio); // Ensure Net Debt/Asset ratio is not negative
                 if (wacc <= g2) return { error: 'WACC must be greater than Perpetual Growth Rate (g2).' };
                 if (roic <= 0) return { error: 'ROIC must be a positive number.' };
                 
@@ -527,20 +528,20 @@
 
             function generateTwoStageSensitivityTable(params) {
                 const { roic, g1, t, g2, wacc, daRatio } = params;
-                const waccSteps = [-1, -0.5, 0, 0.5, 1];
-                const g2Steps = [-0.5, -0.25, 0, 0.25, 0.5];
+                const roicSteps = [-5, -2.5, 0, 2.5, 5];
+                const g1Steps = [-3, -1.5, 0, 1.5, 3];
                 let tableHtml = '<table class="w-full border-collapse text-center">';
-                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">WACC \\ g2</th>';
-                g2Steps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g2 + step).toFixed(2)}%</th>`; });
+                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">ROIC \\ g1</th>';
+                g1Steps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g1 + step).toFixed(2)}%</th>`; });
                 tableHtml += '</tr></thead><tbody>';
-                waccSteps.forEach(waccStep => {
-                    const currentWacc = wacc + waccStep;
-                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
-                    g2Steps.forEach(g2Step => {
-                        const currentG2 = g2 + g2Step;
-                        const result = calculateTwoStagePE(roic, g1, t, currentG2, currentWacc, daRatio);
+                roicSteps.forEach(roicStep => {
+                    const currentRoic = roic + roicStep;
+                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentRoic.toFixed(2)}%</td>`;
+                    g1Steps.forEach(g1Step => {
+                        const currentG1 = g1 + g1Step;
+                        const result = calculateTwoStagePE(currentRoic, currentG1, t, g2, wacc, daRatio);
                         let val = (result.value && isFinite(result.value) && result.value > 0) ? result.value.toFixed(2) : 'N/A';
-                        tableHtml += `<td class="p-2 border ${waccStep === 0 && g2Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
+                        tableHtml += `<td class="p-2 border ${roicStep === 0 && g1Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
                     });
                     tableHtml += '</tr>';
                 });
@@ -584,6 +585,7 @@
 
             function calculateThreeStagePE(roic, g1, t1, g2, t2, g3, wacc, daRatio) {
                 roic /= 100; g1 /= 100; g2 /= 100; g3 /= 100; wacc /= 100; daRatio /= 100;
+                daRatio = Math.max(0, daRatio); // Ensure Net Debt/Asset ratio is not negative
                 if (wacc <= g3) return { error: 'WACC must be greater than Perpetual Growth Rate (g3).' };
                 if (roic <= 0) return { error: 'ROIC must be a positive number.' };
 
@@ -620,20 +622,20 @@
 
             function generateThreeStageSensitivityTable(params) {
                 const { roic, g1, t1, g2, t2, g3, wacc, daRatio } = params;
-                const waccSteps = [-1, -0.5, 0, 0.5, 1];
-                const g3Steps = [-0.5, -0.25, 0, 0.25, 0.5];
+                const roicSteps = [-5, -2.5, 0, 2.5, 5];
+                const g1Steps = [-3, -1.5, 0, 1.5, 3];
                 let tableHtml = '<table class="w-full border-collapse text-center">';
-                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">WACC \\ g3</th>';
-                g3Steps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g3 + step).toFixed(2)}%</th>`; });
+                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">ROIC \\ g1</th>';
+                g1Steps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g1 + step).toFixed(2)}%</th>`; });
                 tableHtml += '</tr></thead><tbody>';
-                waccSteps.forEach(waccStep => {
-                    const currentWacc = wacc + waccStep;
-                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
-                    g3Steps.forEach(g3Step => {
-                        const currentG3 = g3 + g3Step;
-                        const result = calculateThreeStagePE(roic, g1, t1, g2, t2, currentG3, currentWacc, daRatio);
+                roicSteps.forEach(roicStep => {
+                    const currentRoic = roic + roicStep;
+                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentRoic.toFixed(2)}%</td>`;
+                    g1Steps.forEach(g1Step => {
+                        const currentG1 = g1 + g1Step;
+                        const result = calculateThreeStagePE(currentRoic, currentG1, t1, g2, t2, g3, wacc, daRatio);
                         let val = (result.value && isFinite(result.value) && result.value > 0) ? result.value.toFixed(2) : 'N/A';
-                        tableHtml += `<td class="p-2 border ${waccStep === 0 && g3Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
+                        tableHtml += `<td class="p-2 border ${roicStep === 0 && g1Step === 0 ? 'highlight-cell' : ''}">${val}</td>`;
                     });
                     tableHtml += '</tr>';
                 });
@@ -675,6 +677,7 @@
             
             function calculateSingleStagePE(roic, g, t, wacc, daRatio) {
                 roic /= 100; g /= 100; wacc /= 100; daRatio /= 100;
+                daRatio = Math.max(0, daRatio); // Ensure Net Debt/Asset ratio is not negative
                 if (roic <= 0) return { error: 'ROIC must be a positive number.' };
                 if (wacc <= 0) return { error: 'WACC must be a positive number.' };
                 const rr = g / roic;
@@ -693,20 +696,20 @@
 
             function generateSingleStageSensitivityTable(params) {
                 const { roic, g, t, wacc, daRatio } = params;
-                const waccSteps = [-1, -0.5, 0, 0.5, 1];
-                const gSteps = [-1, -0.5, 0, 0.5, 1];
+                const roicSteps = [-5, -2.5, 0, 2.5, 5];
+                const gSteps = [-3, -1.5, 0, 1.5, 3];
                 let tableHtml = '<table class="w-full border-collapse text-center">';
-                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">WACC \\ Growth</th>';
+                tableHtml += '<thead><tr class="bg-gray-100"><th class="p-2 border font-semibold">ROIC \\ Growth</th>';
                 gSteps.forEach(step => { tableHtml += `<th class="p-2 border font-semibold">${(g + step).toFixed(2)}%</th>`; });
                 tableHtml += '</tr></thead><tbody>';
-                waccSteps.forEach(waccStep => {
-                    const currentWacc = wacc + waccStep;
-                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentWacc.toFixed(2)}%</td>`;
+                roicSteps.forEach(roicStep => {
+                    const currentRoic = roic + roicStep;
+                    tableHtml += `<tr><td class="p-2 border font-semibold bg-gray-100">${currentRoic.toFixed(2)}%</td>`;
                     gSteps.forEach(gStep => {
                         const currentG = g + gStep;
-                        const result = calculateSingleStagePE(roic, currentG, t, currentWacc, daRatio);
+                        const result = calculateSingleStagePE(currentRoic, currentG, t, wacc, daRatio);
                         let val = (result.value && isFinite(result.value)) ? result.value.toFixed(2) : 'N/A';
-                        tableHtml += `<td class="p-2 border ${waccStep === 0 && gStep === 0 ? 'highlight-cell' : ''}">${val}</td>`;
+                        tableHtml += `<td class="p-2 border ${roicStep === 0 && gStep === 0 ? 'highlight-cell' : ''}">${val}</td>`;
                     });
                     tableHtml += '</tr>';
                 });
@@ -890,7 +893,7 @@
                     const wacc = V > 0 ? ((marketCap / V) * costOfEquity + (debt / V) * costOfDebt * (1 - taxRate)) * 100 : 0;
                     
                     const totalAssets = balanceSheet.totalAssets || 0;
-                    const netDebt = debt - cash - shortTermInvestments;
+                    const netDebt = Math.max(0, debt - cash - shortTermInvestments);
                     const daRatio = totalAssets > 0 ? (netDebt / totalAssets) * 100 : 0;
 
                     fetcher.fetchedData = { roic, wacc, daRatio };
